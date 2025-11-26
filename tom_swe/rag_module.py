@@ -15,14 +15,12 @@ import logging
 import os
 import pickle
 import re
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # LiteLLM imports
 import litellm
-import numpy as np
 from dotenv import load_dotenv
 from litellm import completion, embedding
 from tqdm import tqdm
@@ -276,73 +274,8 @@ class VectorDB:
         )
 
     def search(self, query: str, k: int = 20) -> List[RetrievalResult]:
-        """
-        Search for similar documents.
-
-        Args:
-            query: Search query
-            k: Number of results to return
-
-        Returns:
-            List of RetrievalResult objects
-        """
-        search_start_time = time.time()
-        logger.info(f"🔍 Starting vector search for query (k={k})...")
-
-        # Query embedding generation
-        embedding_start_time = time.time()
-        if query in self.query_cache:
-            query_embedding = self.query_cache[query]
-            logger.info("⏱️  Query embedding: cached (0.00s)")
-        else:
-            query_embedding = self._get_embeddings([query])[0]
-            self.query_cache[query] = query_embedding
-            embedding_end_time = time.time()
-            logger.info(
-                f"⏱️  Query embedding generation: {embedding_end_time - embedding_start_time:.2f}s"
-            )
-
-        if not self.embeddings:
-            raise ValueError("No data loaded in the vector database.")
-
-        # Calculate similarities
-        similarity_start_time = time.time()
-        logger.info(
-            f"🔢 Computing similarities with {len(self.embeddings)} stored embeddings..."
-        )
-        similarities = np.dot(self.embeddings, query_embedding)
-        similarity_end_time = time.time()
-        logger.info(
-            f"⏱️  Matrix multiplication (np.dot): {similarity_end_time - similarity_start_time:.2f}s"
-        )
-
-        # Sort and get top results
-        sort_start_time = time.time()
-        top_indices = np.argsort(similarities)[::-1][:k]
-        sort_end_time = time.time()
-        logger.info(
-            f"⏱️  Sorting and top-k selection: {sort_end_time - sort_start_time:.2f}s"
-        )
-
-        # Build results
-        results_start_time = time.time()
-        results = []
-        for idx in top_indices:
-            chunk_metadata = self.metadata[idx]
-            result = RetrievalResult(
-                content=chunk_metadata["content"],  # Content is now stored in metadata
-                metadata=chunk_metadata,
-                similarity=float(similarities[idx]),
-            )
-            results.append(result)
-        results_end_time = time.time()
-        logger.info(
-            f"⏱️  Results construction: {results_end_time - results_start_time:.2f}s"
-        )
-
-        total_search_time = time.time() - search_start_time
-        logger.info(f"⏱️  Total vector search time: {total_search_time:.2f}s")
-        return results
+        # TODO: Implement search logic
+        return []
 
     def _create_optimized_chunks(
         self, documents: List[Document], config: ChunkingConfig
